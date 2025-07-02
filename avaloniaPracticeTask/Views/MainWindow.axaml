@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:avaloniaPracticeTask.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="avaloniaPracticeTask.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="avaloniaPracticeTask">
+
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+
+
+		<StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+			<Button Click="Button_Click" HorizontalAlignment="Center">Press Me!</Button>
+			<TextBlock Margin="0 10" x:Name="message" HorizontalAlignment="Center">Ready...</TextBlock>
+		</StackPanel>
+
+
+		<StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20">
+			<TextBlock Margin="0 5" HorizontalAlignment="Center">Choose an animal:</TextBlock>
+			<ListBox x:Name="animals" MinWidth="200" HorizontalAlignment="Center"/>
+		</StackPanel>
+
+		<Design.DataContext>
+			<vm:MainWindowViewModel/>
+		</Design.DataContext>
+	</Grid>
+</Window>
