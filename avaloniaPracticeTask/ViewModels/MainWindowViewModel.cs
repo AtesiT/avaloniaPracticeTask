@@ -1,10 +1,12 @@
-﻿using AvaloniaApplication2.Models;
+﻿using avaloniaPracticeTask.Models;
 using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
 using System;
+using Avalonia;
+using Avalonia.Input;
 
-namespace AvaloniaApplication2.ViewModels
+namespace avaloniaPracticeTask.ViewModels
 {
     public class EllipseItem
     {
@@ -37,15 +39,7 @@ namespace AvaloniaApplication2.ViewModels
             }
 
             // Инициализация эллипсов
-            var random = new Random();
-            for (int i = 0; i < 10; i++)
-            {
-                Ellipses.Add(new EllipseItem
-                {
-                    X = random.Next(0, 400), //  ширину  канваса
-                    Y = random.Next(0, 400)  //  высоту  канваса
-                });
-            }
+
         }
 
         public void AddAnimal()
@@ -55,6 +49,12 @@ namespace AvaloniaApplication2.ViewModels
                 Animals.Add(new Animal(NewAnimalName, $"Description of {NewAnimalName}"));
                 NewAnimalName = "";
             }
+        }
+
+
+        internal void CreateElipse(Point properties)
+        {
+            Ellipses.Add(new EllipseItem { X = properties.X, Y = properties.Y });
         }
     }
 }

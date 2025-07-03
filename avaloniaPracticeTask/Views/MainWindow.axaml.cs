@@ -1,8 +1,9 @@
-using AvaloniaApplication2.ViewModels;
+using avaloniaPracticeTask.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 
-namespace AvaloniaApplication2.Views
+namespace avaloniaPracticeTask.Views
 {
     public partial class MainWindow : Window
     {
@@ -10,6 +11,14 @@ namespace AvaloniaApplication2.Views
         {
             InitializeComponent();
             DataContext = new MainWindowViewModel();
+        }
+
+        private void Canvas_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        {
+            var pos = e.GetCurrentPoint((Control)sender).Position;
+            if (DataContext is not MainWindowViewModel viewModel) return;
+            viewModel.CreateElipse(pos);
+
         }
     }
 }

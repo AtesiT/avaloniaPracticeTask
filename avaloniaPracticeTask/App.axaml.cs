@@ -4,10 +4,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using AvaloniaApplication2.ViewModels;
-using AvaloniaApplication2.Views;
+using avaloniaPracticeTask.ViewModels;
+using avaloniaPracticeTask.Views;
 
-namespace AvaloniaApplication2
+namespace avaloniaPracticeTask
 {
     public partial class App : Application
     {

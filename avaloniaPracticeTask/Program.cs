@@ -1,7 +1,7 @@
 ﻿using System;
 using Avalonia;
 
-namespace AvaloniaApplication2
+namespace avaloniaPracticeTask
 {
     internal sealed class Program
     {
