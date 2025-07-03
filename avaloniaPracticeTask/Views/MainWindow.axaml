@@ -1,13 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:avaloniaPracticeTask.ViewModels"
+        xmlns:vm="using:AvaloniaApplication2.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="avaloniaPracticeTask.Views.MainWindow"
+        x:Class="AvaloniaApplication2.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="avaloniaPracticeTask">
+        Title="AvaloniaApplication2">
+
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
 
 	<Grid>
 		<Grid.ColumnDefinitions>
@@ -15,20 +19,40 @@
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 
-
 		<StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-			<Button Click="Button_Click" HorizontalAlignment="Center">Press Me!</Button>
-			<TextBlock Margin="0 10" x:Name="message" HorizontalAlignment="Center">Ready...</TextBlock>
+			<TextBox Watermark="Enter animal name" Text="{Binding NewAnimalName}"/>
+			<Button Command="{Binding AddAnimal}" HorizontalAlignment="Center" Margin="0 10">Add Animal</Button>
 		</StackPanel>
-
 
 		<StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20">
-			<TextBlock Margin="0 5" HorizontalAlignment="Center">Choose an animal:</TextBlock>
-			<ListBox x:Name="animals" MinWidth="200" HorizontalAlignment="Center"/>
-		</StackPanel>
+			<TextBlock Margin="0 5" HorizontalAlignment="Center">List of animals:</TextBlock>
+			<ListBox ItemsSource="{Binding Animals}" MinWidth="200" HorizontalAlignment="Center">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Vertical" Margin="5">
+							<TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+						</StackPanel>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
 
-		<Design.DataContext>
-			<vm:MainWindowViewModel/>
-		</Design.DataContext>
+			<ItemsControl ItemsSource="{Binding Ellipses}">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<Canvas Width="400" Height="400">
+						</Canvas>
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Ellipse Width="20" Height="20" Fill="Blue">
+							<Ellipse.RenderTransform>
+								<TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+							</Ellipse.RenderTransform>
+						</Ellipse>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</StackPanel>
 	</Grid>
 </Window>

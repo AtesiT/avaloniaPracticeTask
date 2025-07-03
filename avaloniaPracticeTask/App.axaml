@@ -1,9 +1,8 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="avaloniaPracticeTask.App"
-             xmlns:local="using:avaloniaPracticeTask"
+             x:Class="AvaloniaApplication2.App"
+             xmlns:local="using:AvaloniaApplication2"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
