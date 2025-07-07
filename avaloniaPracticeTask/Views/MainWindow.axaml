@@ -39,7 +39,10 @@
 			<ItemsControl ItemsSource="{Binding Ellipses}">
 				<ItemsControl.ItemsPanel>
 					<ItemsPanelTemplate>
-						<Canvas Background="#01000000" Width="400" Height="400" PointerPressed="Canvas_PointerPressed">
+						<Canvas Background="#01000000" Width="400" Height="400"
+						        PointerPressed="Canvas_PointerPressed"
+						        PointerMoved="Canvas_PointerMoved"
+						        PointerReleased="Canvas_PointerReleased">
 						</Canvas>
 					</ItemsPanelTemplate>
 				</ItemsControl.ItemsPanel>

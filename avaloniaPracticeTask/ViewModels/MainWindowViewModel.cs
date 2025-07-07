@@ -3,15 +3,48 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
 using System;
+using System.ComponentModel;
 using Avalonia;
-using Avalonia.Input;
 
 namespace avaloniaPracticeTask.ViewModels
 {
-    public class EllipseItem
+    public class EllipseItem : INotifyPropertyChanged
     {
-        public double X { get; set; }
-        public double Y { get; set; }
+        private double _x;
+        private double _y;
+
+        public double X
+        {
+            get => _x;
+            set
+            {
+                if (_x != value)
+                {
+                    _x = value;
+                    OnPropertyChanged(nameof(X));
+                }
+            }
+        }
+
+        public double Y
+        {
+            get => _y;
+            set
+            {
+                if (_y != value)
+                {
+                    _y = value;
+                    OnPropertyChanged(nameof(Y));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public class MainWindowViewModel : ReactiveObject
@@ -37,9 +70,6 @@ namespace avaloniaPracticeTask.ViewModels
             {
                 Animals.Add(animal);
             }
-
-            // Инициализация эллипсов
-
         }
 
         public void AddAnimal()
@@ -51,10 +81,15 @@ namespace avaloniaPracticeTask.ViewModels
             }
         }
 
-
-        internal void CreateElipse(Point properties)
+        public void CreateEllipse(Avalonia.Point point)
         {
-            Ellipses.Add(new EllipseItem { X = properties.X, Y = properties.Y });
+            Ellipses.Add(new EllipseItem { X = point.X, Y = point.Y });
+        }
+
+        public void UpdateEllipsePosition(EllipseItem ellipse, Avalonia.Point point)
+        {
+            ellipse.X = point.X;
+            ellipse.Y = point.Y;
         }
     }
 }
