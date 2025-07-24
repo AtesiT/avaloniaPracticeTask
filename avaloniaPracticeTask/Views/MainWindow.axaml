@@ -1,61 +1,37 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:avaloniaPracticeTask.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="avaloniaPracticeTask.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="avaloniaPracticeTask">
-
-	<Design.DataContext>
-		<vm:MainWindowViewModel/>
-	</Design.DataContext>
-
-	<Grid>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="*"/>
-			<ColumnDefinition Width="*"/>
-		</Grid.ColumnDefinitions>
-
-		<StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-			<TextBox Watermark="Enter animal name" Text="{Binding NewAnimalName}"/>
-			<Button Command="{Binding AddAnimal}" HorizontalAlignment="Center" Margin="0 10">Add Animal</Button>
+        Title="Paint" Width="1280" Height="720">
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="5">
+			<Button x:Name="UndoButton" Content="←" Width="35"/>
+			<Button x:Name="RedoButton" Content="→" Width="35"/>
+			<Button x:Name="LineModeButton" Content="─" Width="35"/>
+			<Button x:Name="FreeDrawModeButton" Content="🖌️" Width="35"/>
+			<Button x:Name="EraserModeButton" Content="Ластик" Width="85"/>
+			<Button x:Name="ClearButton" Content="Очистить" Width="85"/>
+			<StackPanel Orientation="Horizontal" Spacing="5" Margin="10,0,0,0">
+				<TextBlock Text="Цвет:" VerticalAlignment="Center"/>
+				<ComboBox x:Name="ColorComboBox" Width="100" SelectedIndex="0">
+					<ComboBoxItem>Black</ComboBoxItem>
+					<ComboBoxItem>Red</ComboBoxItem>
+					<ComboBoxItem>Green</ComboBoxItem>
+					<ComboBoxItem>Blue</ComboBoxItem>
+					<ComboBoxItem>Yellow</ComboBoxItem>
+					<ComboBoxItem>Orange</ComboBoxItem>
+					<ComboBoxItem>Purple</ComboBoxItem>
+					<ComboBoxItem>Pink</ComboBoxItem>
+				</ComboBox>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal" Spacing="5" Margin="10,0,0,0">
+				<TextBlock Text="Толщина кисти:" VerticalAlignment="Center"/>
+				<Slider x:Name="BrushThicknessSlider" Minimum="1" Maximum="50" Value="2" Width="100" IsSnapToTickEnabled="True" TickFrequency="1"/>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal" Spacing="5" Margin="10,0,0,0">
+				<TextBlock Text="Толщина ластика:" VerticalAlignment="Center"/>
+				<Slider x:Name="EraserThicknessSlider" Minimum="1" Maximum="50" Value="20" Width="100" IsSnapToTickEnabled="True" TickFrequency="1"/>
+			</StackPanel>
 		</StackPanel>
-
-		<StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20">
-			<TextBlock Margin="0 5" HorizontalAlignment="Center">List of animals:</TextBlock>
-			<ListBox ItemsSource="{Binding Animals}" MinWidth="200" HorizontalAlignment="Center">
-				<ListBox.ItemTemplate>
-					<DataTemplate>
-						<StackPanel Orientation="Vertical" Margin="5">
-							<TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-						</StackPanel>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>
-
-			<ItemsControl ItemsSource="{Binding Ellipses}">
-				<ItemsControl.ItemsPanel>
-					<ItemsPanelTemplate>
-						<Canvas Background="#01000000" Width="400" Height="400"
-						        PointerPressed="Canvas_PointerPressed"
-						        PointerMoved="Canvas_PointerMoved"
-						        PointerReleased="Canvas_PointerReleased">
-						</Canvas>
-					</ItemsPanelTemplate>
-				</ItemsControl.ItemsPanel>
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<Ellipse Width="20" Height="20" Fill="Blue">
-							<Ellipse.RenderTransform>
-								<TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
-							</Ellipse.RenderTransform>
-						</Ellipse>
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
-		</StackPanel>
-	</Grid>
+		<Canvas x:Name="DrawingCanvas" Background="White"/>
+	</DockPanel>
 </Window>

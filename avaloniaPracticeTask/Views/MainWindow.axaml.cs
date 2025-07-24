@@ -1,91 +1,194 @@
-using avaloniaPracticeTask.ViewModels;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Input;
-using System.Linq;
-using System.Diagnostics;
+using Avalonia.Media;
+using Avalonia.Controls.Shapes;
+using Avalonia.Interactivity;
+using System.Collections.Generic;
 
 namespace avaloniaPracticeTask.Views
 {
     public partial class MainWindow : Window
     {
-        private EllipseItem? _selectedEllipse;
-        private bool _isDragging;
+        private enum DrawingMode { Line, FreeDraw, Eraser }
+        private DrawingMode currentMode = DrawingMode.Line;
+        private IBrush currentBrush = Brushes.Black;
+
+        private double brushThickness = 2;
+        private double eraserThickness = 20;
+
+        // Для режима линий
+        private Point? lineStartPoint;
+        private Line? currentLine;
+
+        // Для свободного рисования и ластика
+        private Path? currentPath;
+        private PathFigure? currentFigure;
+        private bool isDrawing = false;
+
+        // Стеки для undo/redo
+        private Stack<Control> undoStack = new Stack<Control>();
+        private Stack<Control> redoStack = new Stack<Control>();
 
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+
+            LineModeButton.Click += (s, e) => currentMode = DrawingMode.Line;
+            FreeDrawModeButton.Click += (s, e) => currentMode = DrawingMode.FreeDraw;
+            EraserModeButton.Click += (s, e) => currentMode = DrawingMode.Eraser;
+            ClearButton.Click += ClearButton_Click;
+            ColorComboBox.SelectionChanged += ColorComboBox_SelectionChanged;
+
+            // Обработчики undo/redo
+            UndoButton.Click += UndoButton_Click;
+            RedoButton.Click += RedoButton_Click;
+
+            // Инициализация слайдеров
+            BrushThicknessSlider.ValueChanged += (s, e) => brushThickness = BrushThicknessSlider.Value;
+            EraserThicknessSlider.ValueChanged += (s, e) => eraserThickness = EraserThicknessSlider.Value;
+
+            DrawingCanvas.PointerPressed += DrawingCanvas_PointerPressed;
+            DrawingCanvas.PointerReleased += DrawingCanvas_PointerReleased;
+            DrawingCanvas.PointerMoved += DrawingCanvas_PointerMoved;
         }
 
-        private void Canvas_PointerPressed(object? sender, PointerPressedEventArgs e)
+        private void ColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (DataContext is not MainWindowViewModel viewModel || sender is not Control control) return;
+            var selectedItem = (ComboBoxItem)ColorComboBox.SelectedItem;
+            var colorName = selectedItem.Content.ToString();
 
-            if (e.GetCurrentPoint(control).Properties.IsLeftButtonPressed)
+            currentBrush = colorName switch
             {
-                var pos = e.GetCurrentPoint(control).Position;
-                Debug.WriteLine($"Нажатие мыши: X={pos.X}, Y={pos.Y}");
+                "Red" => Brushes.Red,
+                "Green" => Brushes.Green,
+                "Blue" => Brushes.Blue,
+                "Yellow" => Brushes.Yellow,
+                "Orange" => Brushes.Orange,
+                "Purple" => Brushes.Purple,
+                "Pink" => Brushes.Pink,
+                _ => Brushes.Black // Default
+            };
+        }
 
-                var hitEllipse = viewModel.Ellipses.FirstOrDefault(ellipse =>
-                    IsPointInEllipse(pos, ellipse, 20, 20));
+        private void DrawingCanvas_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            var point = e.GetPosition(DrawingCanvas);
 
-                if (hitEllipse != null)
+            if (currentMode == DrawingMode.Line)
+            {
+                lineStartPoint = point;
+                currentLine = new Line
                 {
-                    Debug.WriteLine($"Выбран эллипс: X={hitEllipse.X}, Y={hitEllipse.Y}");
-                    _selectedEllipse = hitEllipse;
-                    _isDragging = true;
-                }
-                else
+                    StartPoint = point,
+                    EndPoint = point,
+                    Stroke = currentBrush,
+                    StrokeThickness = brushThickness, // Используем регулируемую толщину кисти
+                    StrokeLineCap = PenLineCap.Round
+                };
+                DrawingCanvas.Children.Add(currentLine);
+            }
+            else if ((currentMode == DrawingMode.FreeDraw || currentMode == DrawingMode.Eraser) && e.GetCurrentPoint(DrawingCanvas).Properties.IsLeftButtonPressed)
+            {
+                isDrawing = true;
+
+                var brush = currentMode == DrawingMode.Eraser ? Brushes.White : currentBrush;
+                var thickness = currentMode == DrawingMode.Eraser ? eraserThickness : brushThickness;
+
+                currentPath = new Path
                 {
-                    Debug.WriteLine("Эллипс не найден, создание нового");
-                    viewModel.CreateEllipse(pos); // Исправлено: CreateElipse -> CreateEllipse
+                    Stroke = brush,
+                    StrokeThickness = thickness,
+                    StrokeLineCap = PenLineCap.Round,
+                    StrokeJoin = PenLineJoin.Round,
+                    Data = new PathGeometry()
+                };
+
+                currentFigure = new PathFigure
+                {
+                    StartPoint = point,
+                    IsClosed = false
+                };
+
+                ((PathGeometry)currentPath.Data).Figures.Add(currentFigure);
+                DrawingCanvas.Children.Add(currentPath);
+            }
+        }
+
+        private void DrawingCanvas_PointerMoved(object? sender, PointerEventArgs e)
+        {
+            var point = e.GetPosition(DrawingCanvas);
+
+            if (currentMode == DrawingMode.Line && lineStartPoint != null && currentLine != null)
+            {
+                currentLine.EndPoint = point;
+            }
+            else if ((currentMode == DrawingMode.FreeDraw || currentMode == DrawingMode.Eraser) && isDrawing && currentFigure != null)
+            {
+                if (currentFigure.Segments.Count == 0 ||
+                    ((LineSegment)currentFigure.Segments[^1]).Point != point)
+                {
+                    currentFigure.Segments.Add(new LineSegment { Point = point });
+                    DrawingCanvas.InvalidateVisual();
                 }
             }
         }
 
-        private void Canvas_PointerMoved(object? sender, PointerEventArgs e)
+        private void DrawingCanvas_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-            if (_isDragging && _selectedEllipse != null && DataContext is MainWindowViewModel viewModel && sender is Control control)
+            if (currentMode == DrawingMode.Line)
             {
-                var pos = e.GetCurrentPoint(control).Position;
-                if (e.GetCurrentPoint(control).Properties.IsLeftButtonPressed)
+                if (currentLine != null)
                 {
-                    viewModel.UpdateEllipsePosition(_selectedEllipse, pos); // Исправлено: UpdateElipsePosition -> UpdateEllipsePosition
-                    Debug.WriteLine($"Перетаскивание эллипса: X={pos.X}, Y={pos.Y}");
+                    undoStack.Push(currentLine);
+                    redoStack.Clear(); // Новое действие очищает redo
                 }
-                else
+                lineStartPoint = null;
+                currentLine = null;
+            }
+            else if (currentMode == DrawingMode.FreeDraw || currentMode == DrawingMode.Eraser)
+            {
+                if (currentPath != null)
                 {
-                    _isDragging = false;
-                    _selectedEllipse = null;
-                    Debug.WriteLine("Перетаскивание остановлено: левая кнопка отпущена");
+                    undoStack.Push(currentPath);
+                    redoStack.Clear(); // Новое действие очищает redo
                 }
+                isDrawing = false;
+                currentPath = null;
+                currentFigure = null;
             }
         }
 
-        private void Canvas_PointerReleased(object? sender, PointerReleasedEventArgs e)
+        private void UndoButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (_isDragging)
+            if (undoStack.Count > 0)
             {
-                _isDragging = false;
-                _selectedEllipse = null;
-                Debug.WriteLine("Перетаскивание остановлено: мышь отпущена");
+                var item = undoStack.Pop();
+                DrawingCanvas.Children.Remove(item);
+                redoStack.Push(item);
             }
         }
 
-        private bool IsPointInEllipse(Avalonia.Point point, EllipseItem ellipse, double width, double height)
+        private void RedoButton_Click(object? sender, RoutedEventArgs e)
         {
-            // Центр эллипса (TranslateTransform позиционирует верхний левый угол)
-            double centerX = ellipse.X + width / 2;
-            double centerY = ellipse.Y + height / 2;
+            if (redoStack.Count > 0)
+            {
+                var item = redoStack.Pop();
+                DrawingCanvas.Children.Add(item);
+                undoStack.Push(item);
+            }
+        }
 
-            // Проверка попадания точки в эллипс по уравнению эллипса
-            double dx = point.X - centerX;
-            double dy = point.Y - centerY;
-            bool isInEllipse = (dx * dx) / ((width / 2) * (width / 2)) + (dy * dy) / ((height / 2) * (height / 2)) <= 1;
-
-            Debug.WriteLine($"Проверка эллипса: X={ellipse.X}, Y={ellipse.Y}, CenterX={centerX}, CenterY={centerY}, ClickX={point.X}, ClickY={point.Y}, IsInEllipse={isInEllipse}");
-            return isInEllipse;
+        private void ClearButton_Click(object? sender, RoutedEventArgs e)
+        {
+            DrawingCanvas.Children.Clear();
+            undoStack.Clear();
+            redoStack.Clear();
+            currentLine = null;
+            currentPath = null;
+            currentFigure = null;
+            isDrawing = false;
+            lineStartPoint = null;
         }
     }
 }
